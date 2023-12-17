@@ -17,7 +17,7 @@ var (
 	LAT           = "lat"
 	LNG           = "lng"
 	RADIUS        = "radius"
-	TRACER_NAME   = "driver_service"
+	TracerName    = "driver_service"
 	BitSize       = 64
 )
 
@@ -27,7 +27,7 @@ type Controller struct {
 	setLocationCounter prometheus.Counter
 }
 
-var tracer = otel.Tracer(TRACER_NAME)
+var tracer = otel.Tracer(TracerName)
 
 func NewController(service *service.MainService) *Controller {
 	return &Controller{
