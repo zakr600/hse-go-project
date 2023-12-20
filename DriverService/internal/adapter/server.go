@@ -42,7 +42,7 @@ func (s *Server) SetUp() {
 
 func (s *Server) Start() error {
 	s.log.Info("Starting server")
-	return http.ListenAndServe(s.config.ServerConfig.Host+":"+s.config.ServerConfig.Port, s.router)
+	return http.ListenAndServe(":"+s.config.ServerConfig.Port, s.router)
 }
 
 func (s *Server) Stop() error {

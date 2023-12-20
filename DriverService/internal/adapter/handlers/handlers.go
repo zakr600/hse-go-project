@@ -107,7 +107,7 @@ func (controller *Controller) HandlerStartTrip() http.HandlerFunc {
 	}
 }
 
-// //////
+// DEBUG
 func (controller *Controller) HandlerAddTrip() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		trip := models.Trip{
