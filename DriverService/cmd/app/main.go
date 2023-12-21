@@ -40,7 +40,7 @@ func main() {
 
 	log.Printf("Received signal: %s\n", <-sigChan)
 
-	timeAfterSignal := 5 * time.Second
+	timeAfterSignal := 0 * time.Second
 	log.Printf("Termination in %s\n", timeAfterSignal)
 	time.Sleep(timeAfterSignal)
 

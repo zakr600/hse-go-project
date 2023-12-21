@@ -4,6 +4,7 @@ import (
 	"DriverService/internal/adapter/handlers"
 	"DriverService/internal/config"
 	"github.com/gorilla/mux"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.uber.org/zap"
 	"net/http"
 )
@@ -29,6 +30,8 @@ func New(
 
 func (s *Server) SetUp() {
 	controller := handlers.NewController(s.log)
+	s.log.Info("Registered metrics handler")
+	s.router.Handle("/metrics", promhttp.Handler())
 	trips := s.router.PathPrefix("/trips").Subrouter()
 
 	trips.HandleFunc("", controller.HandlerGetTrips())
