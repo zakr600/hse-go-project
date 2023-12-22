@@ -12,6 +12,12 @@ var (
 	Port           = "port"
 	ApiVersion     = "api_version"
 	Debug          = "debug"
+	dbUserName     = "db_username"
+	dbPassword     = "db_password"
+	dbName         = "db_name"
+	dbDriverName   = "db_driver_name"
+	dbPackageName  = "db_package_name"
+	dbPort         = "db_port"
 	errNoParameter = errors.New("failed to read server config")
 )
 
@@ -19,6 +25,15 @@ type ServerConfig struct {
 	Port       int    `yaml:"port"`
 	ApiVersion string `yaml:"version"`
 	Debug      bool   `yaml:"debug"`
+}
+
+type DbConfig struct {
+	Username      string
+	Password      string
+	Dbname        string
+	DbDriverName  string
+	DbPackageName string
+	DbPort        int
 }
 
 // NewConfig Load server config from environment variables
@@ -30,6 +45,20 @@ func NewConfig() (*ServerConfig, error) {
 		Port:       getEnvAsInt(Port, 80),
 		ApiVersion: getEnv(ApiVersion, ""),
 		Debug:      getEnvAsBool(Debug, false),
+	}, nil
+}
+
+func NewDbConfig() (*DbConfig, error) {
+	if err := godotenv.Load(); err != nil {
+		return nil, errNoParameter
+	}
+	return &DbConfig{
+		Username:      getEnv(dbUserName, ""),
+		Password:      getEnv(dbPassword, ""),
+		Dbname:        getEnv(dbName, ""),
+		DbDriverName:  getEnv(dbDriverName, ""),
+		DbPackageName: getEnv(dbPackageName, ""),
+		DbPort:        getEnvAsInt(dbPort, 5432),
 	}, nil
 }
 

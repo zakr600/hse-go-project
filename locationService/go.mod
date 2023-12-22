@@ -5,11 +5,11 @@ go 1.19
 require (
 	github.com/go-chi/chi/v5 v5.0.10
 	github.com/joho/godotenv v1.5.1
+	github.com/lib/pq v1.10.9
 	github.com/prometheus/client_golang v1.17.0
 	github.com/umahmood/haversine v0.0.0-20151105152445-808ab04add26
 	go.opentelemetry.io/otel v1.21.0
 	go.uber.org/zap v1.26.0
-	gopkg.in/yaml.v2 v2.4.0
 )
 
 require (

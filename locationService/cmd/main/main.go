@@ -19,12 +19,14 @@ func main() {
 		fmt.Println("Failed to read config")
 		return
 	}
-	fmt.Println(cfg.Port)
-	fmt.Println(cfg.ApiVersion)
-	fmt.Println(cfg.Debug)
+	dbCfg, err := config.NewDbConfig()
+	if err != nil {
+		fmt.Println("Failed to read db config")
+		return
+	}
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
-	serverApp := internal.NewApplication(*cfg, service.CreateMainService(repository.CreateMapRepository()))
+	serverApp := internal.NewApplication(*cfg, service.CreateMainService(repository.CreateDbRepository(*dbCfg)))
 	internal.Run(serverApp)
 	<-ctx.Done()
 	ctx, stop = context.WithTimeout(ctx, 10*time.Second)
