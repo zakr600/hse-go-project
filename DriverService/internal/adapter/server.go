@@ -39,6 +39,7 @@ func (s *Server) SetUp() {
 	trips.HandleFunc("/{trip_id}/cancel", controller.HandlerCancelTrip())
 	trips.HandleFunc("/{trip_id}/accept", controller.HandlerAcceptTrip())
 	trips.HandleFunc("/{trip_id}/start", controller.HandlerStartTrip())
+	trips.HandleFunc("/{trip_id}/end", controller.HandlerEndTrip())
 
 	s.router.HandleFunc("/add", controller.HandlerAddTrip())
 }

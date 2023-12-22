@@ -3,8 +3,9 @@ package service
 import (
 	"DriverService/internal/models"
 	"DriverService/internal/repository/inmemory"
+	"DriverService/internal/schemes"
 	"context"
-	"fmt"
+	"encoding/json"
 	"github.com/segmentio/kafka-go"
 	"os"
 )
@@ -37,21 +38,86 @@ func (s *Service) GetTrip(tripId string) (models.Trip, error) {
 	return trip, err
 }
 
-func (s *Service) SetTripStatus(tripId string, status string) error {
-	return s.repo.ChangeTripStatus(tripId, status)
+func (s *Service) OnStatusAccept(tripID string) error {
+	_ = s.repo.ChangeTripStatus(tripID, "ACCEPTED")
+	trip, err := s.repo.Get(tripID)
+	if err != nil {
+		return err
+	}
+
+	data := map[string]interface{}{
+		"trip_id":   tripID,
+		"driver_id": trip.DriverId,
+	}
+	command := schemes.NewScheme(schemes.AcceptType, data)
+
+	err = s.writeCommand(command)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
+func (s *Service) OnStatusStart(tripID string) error {
+	_ = s.repo.ChangeTripStatus(tripID, "STARTED")
+
+	data := map[string]interface{}{
+		"trip_id": tripID,
+	}
+	command := schemes.NewScheme(schemes.AcceptType, data)
+
+	err := s.writeCommand(command)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *Service) OnStatusEnd(tripID string) error {
+	_ = s.repo.ChangeTripStatus(tripID, "ENDED")
+
+	data := map[string]interface{}{
+		"trip_id": tripID,
+	}
+	command := schemes.NewScheme(schemes.AcceptType, data)
+
+	err := s.writeCommand(command)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *Service) OnStatusCancel(tripID string) error {
+	_ = s.repo.ChangeTripStatus(tripID, "CANCELLED")
+
+	data := map[string]interface{}{
+		"trip_id": tripID,
+		"reason":  "Cancelled",
+	}
+	command := schemes.NewScheme(schemes.AcceptType, data)
+
+	err := s.writeCommand(command)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// TODO: удалить
 func (s *Service) AddTrip(trip models.Trip) {
 	s.repo.Add(trip)
 }
 
-func (s *Service) OnStatusAccept(tripID string) error {
-	ctx := context.Background()
-	_ = s.repo.ChangeTripStatus(tripID, "ACCEPTED")
-	fmt.Println(os.Getenv("KAFKA"))
-	err := s.writer.WriteMessages(ctx, kafka.Message{Key: []byte("command"), Value: []byte("abc")})
+func (s *Service) writeCommand(cmd schemes.Scheme) error {
+	msgBytes, err := json.Marshal(cmd)
 	if err != nil {
-		fmt.Println("KAFKA ERROR", err.Error())
+		return err
 	}
-	return nil
+
+	msg := kafka.Message{
+		Value: msgBytes,
+	}
+
+	return s.writer.WriteMessages(context.Background(), msg)
 }

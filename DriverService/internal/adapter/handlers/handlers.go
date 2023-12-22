@@ -96,7 +96,7 @@ func (controller *Controller) HandlerCancelTrip() http.HandlerFunc {
 
 		httpRequestsTotal.WithLabelValues("HandlerCancelTrip").Inc()
 		controller.log.Info("Request: cancel trip  %s", zap.String("trip_id", tripID))
-		err := controller.s.SetTripStatus(tripID, "CANCELED")
+		err := controller.s.OnStatusCancel(tripID)
 		if err != nil {
 			httpRequests5xx.WithLabelValues("HandlerCancelTrip").Inc()
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -133,13 +133,32 @@ func (controller *Controller) HandlerStartTrip() http.HandlerFunc {
 
 		httpRequestsTotal.WithLabelValues("HandlerStartTrip").Inc()
 		controller.log.Info("Request: start trip  %s", zap.String("trip_id", tripID))
-		err := controller.s.SetTripStatus(tripID, "STARTED")
+		err := controller.s.OnStatusStart(tripID)
 		if err != nil {
 			httpRequests5xx.WithLabelValues("HandlerStartTrip").Inc()
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		httpRequests2xx.WithLabelValues("HandlerStartTrip").Inc()
+		return
+	}
+}
+
+func (controller *Controller) HandlerEndTrip() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+
+		tripID := vars["trip_id"]
+
+		httpRequestsTotal.WithLabelValues("HandlerEndTrip").Inc()
+		controller.log.Info("Request: end trip  %s", zap.String("trip_id", tripID))
+		err := controller.s.OnStatusEnd(tripID)
+		if err != nil {
+			httpRequests5xx.WithLabelValues("HandlerEndTrip").Inc()
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		httpRequests2xx.WithLabelValues("HandlerEndTrip").Inc()
 		return
 	}
 }
