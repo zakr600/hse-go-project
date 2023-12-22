@@ -6,6 +6,7 @@ import (
 	"DriverService/internal/schemes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/segmentio/kafka-go"
 	"os"
 )
@@ -13,6 +14,7 @@ import (
 type Service struct {
 	repo   *inmemory.Repository
 	writer *kafka.Writer
+	reader *kafka.Reader
 }
 
 func New() *Service {
@@ -25,6 +27,13 @@ func New() *Service {
 			Topic:    "commands",
 			Balancer: &kafka.LeastBytes{},
 		},
+		reader: kafka.NewReader(kafka.ReaderConfig{
+			Brokers:  []string{kafkaAddress},
+			GroupID:  "consumer-group-id",
+			Topic:    "events",
+			MinBytes: 10e3, // 10KB
+			MaxBytes: 10e6, // 10MB
+		}),
 	}
 }
 
@@ -38,7 +47,7 @@ func (s *Service) GetTrip(tripId string) (models.Trip, error) {
 	return trip, err
 }
 
-func (s *Service) OnStatusAccept(tripID string) error {
+func (s *Service) OnAcceptTrip(tripID string) error {
 	_ = s.repo.ChangeTripStatus(tripID, "ACCEPTED")
 	trip, err := s.repo.Get(tripID)
 	if err != nil {
@@ -58,7 +67,7 @@ func (s *Service) OnStatusAccept(tripID string) error {
 	return nil
 }
 
-func (s *Service) OnStatusStart(tripID string) error {
+func (s *Service) OnStartTrip(tripID string) error {
 	_ = s.repo.ChangeTripStatus(tripID, "STARTED")
 
 	data := map[string]interface{}{
@@ -73,7 +82,7 @@ func (s *Service) OnStatusStart(tripID string) error {
 	return nil
 }
 
-func (s *Service) OnStatusEnd(tripID string) error {
+func (s *Service) OnEndTrip(tripID string) error {
 	_ = s.repo.ChangeTripStatus(tripID, "ENDED")
 
 	data := map[string]interface{}{
@@ -88,7 +97,7 @@ func (s *Service) OnStatusEnd(tripID string) error {
 	return nil
 }
 
-func (s *Service) OnStatusCancel(tripID string) error {
+func (s *Service) OnCancelTrip(tripID string) error {
 	_ = s.repo.ChangeTripStatus(tripID, "CANCELLED")
 
 	data := map[string]interface{}{
@@ -101,6 +110,12 @@ func (s *Service) OnStatusCancel(tripID string) error {
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func (s *Service) OnCreateTrip(event schemes.Event) error {
+	fmt.Println("Trip created")
+	fmt.Println("Event", event)
 	return nil
 }
 
@@ -120,4 +135,30 @@ func (s *Service) writeCommand(cmd schemes.Scheme) error {
 	}
 
 	return s.writer.WriteMessages(context.Background(), msg)
+}
+
+func (s *Service) FetchEvents() error {
+	for {
+		m, err := s.reader.ReadMessage(context.Background())
+		if err != nil {
+			// log ERROR
+			break
+		}
+		var jsonData schemes.JsonData
+		err = json.Unmarshal(m.Value, &jsonData)
+		if err != nil {
+			// log error
+			continue
+		}
+		err = s.OnCreateTrip(jsonData.Event)
+		if err != nil {
+			// log error
+			continue
+		}
+	}
+
+	if err := s.reader.Close(); err != nil {
+		return err
+	}
+	return nil
 }

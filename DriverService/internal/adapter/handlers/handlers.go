@@ -39,8 +39,14 @@ type Controller struct {
 }
 
 func NewController(log *zap.Logger) *Controller {
+	svc := service.New()
+
+	go func() {
+		_ = svc.FetchEvents()
+	}()
+
 	return &Controller{
-		s:   service.New(),
+		s:   svc,
 		log: log,
 	}
 }
@@ -96,7 +102,7 @@ func (controller *Controller) HandlerCancelTrip() http.HandlerFunc {
 
 		httpRequestsTotal.WithLabelValues("HandlerCancelTrip").Inc()
 		controller.log.Info("Request: cancel trip  %s", zap.String("trip_id", tripID))
-		err := controller.s.OnStatusCancel(tripID)
+		err := controller.s.OnCancelTrip(tripID)
 		if err != nil {
 			httpRequests5xx.WithLabelValues("HandlerCancelTrip").Inc()
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -114,7 +120,7 @@ func (controller *Controller) HandlerAcceptTrip() http.HandlerFunc {
 
 		httpRequestsTotal.WithLabelValues("HandlerAcceptTrip").Inc()
 		controller.log.Info("Request: accept trip  %s", zap.String("trip_id", tripID))
-		err := controller.s.OnStatusAccept(tripID)
+		err := controller.s.OnAcceptTrip(tripID)
 		if err != nil {
 			httpRequests5xx.WithLabelValues("HandlerAcceptTrip").Inc()
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -133,7 +139,7 @@ func (controller *Controller) HandlerStartTrip() http.HandlerFunc {
 
 		httpRequestsTotal.WithLabelValues("HandlerStartTrip").Inc()
 		controller.log.Info("Request: start trip  %s", zap.String("trip_id", tripID))
-		err := controller.s.OnStatusStart(tripID)
+		err := controller.s.OnStartTrip(tripID)
 		if err != nil {
 			httpRequests5xx.WithLabelValues("HandlerStartTrip").Inc()
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -152,7 +158,7 @@ func (controller *Controller) HandlerEndTrip() http.HandlerFunc {
 
 		httpRequestsTotal.WithLabelValues("HandlerEndTrip").Inc()
 		controller.log.Info("Request: end trip  %s", zap.String("trip_id", tripID))
-		err := controller.s.OnStatusEnd(tripID)
+		err := controller.s.OnEndTrip(tripID)
 		if err != nil {
 			httpRequests5xx.WithLabelValues("HandlerEndTrip").Inc()
 			http.Error(w, err.Error(), http.StatusInternalServerError)
