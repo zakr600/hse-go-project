@@ -9,6 +9,7 @@ func toHaversine(location repository.Location) haversine.Coord {
 	return haversine.Coord{Lat: location.Lat, Lon: location.Lng}
 }
 
+// GetDistance Calculate distance between two points
 func GetDistance(lhs repository.Location, rhs repository.Location) float64 {
 	_, km := haversine.Distance(toHaversine(lhs), toHaversine(rhs))
 	return km

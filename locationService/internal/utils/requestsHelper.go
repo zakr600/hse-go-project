@@ -12,6 +12,7 @@ var (
 	JsonContent       = "application/json"
 )
 
+// TryParseJsonQuery deserialize json object in request
 func TryParseJsonQuery(w http.ResponseWriter, r *http.Request, v any) bool {
 	data, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -31,6 +32,7 @@ func TryParseJsonQuery(w http.ResponseWriter, r *http.Request, v any) bool {
 	return true
 }
 
+// SendJson sends http responce contains serialized object in json format
 func SendJson(w http.ResponseWriter, r *http.Request, v any, httpCode int) {
 	responseBody, err := json.Marshal(v)
 	if err != nil {

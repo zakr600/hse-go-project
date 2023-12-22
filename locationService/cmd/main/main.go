@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"github.com/YOUR-USER-OR-ORG-NAME/YOUR-REPO-NAME/internal/repository"
 	"os/signal"
 	"syscall"
@@ -13,15 +14,14 @@ import (
 )
 
 func main() {
-	//var cfgPath string
-	//flag.StringVar(&cfgPath, "cfg", "../../configs/config.yaml", "server config")
-	//flag.Parse()
-	//cfg, err := config.NewConfig(cfgPath)
-	//if err != nil {
-	//	fmt.Println("Failed to read config")
-	//	return
-	//}
-	cfg := &config.ServerConfig{Port: 8080, Debug: true}
+	cfg, err := config.NewConfig()
+	if err != nil {
+		fmt.Println("Failed to read config")
+		return
+	}
+	fmt.Println(cfg.Port)
+	fmt.Println(cfg.ApiVersion)
+	fmt.Println(cfg.Debug)
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 	serverApp := internal.NewApplication(*cfg, service.CreateMainService(repository.CreateMapRepository()))

@@ -4,6 +4,7 @@ go 1.19
 
 require (
 	github.com/go-chi/chi/v5 v5.0.10
+	github.com/joho/godotenv v1.5.1
 	github.com/prometheus/client_golang v1.17.0
 	github.com/umahmood/haversine v0.0.0-20151105152445-808ab04add26
 	go.opentelemetry.io/otel v1.21.0
