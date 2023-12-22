@@ -114,7 +114,7 @@ func (controller *Controller) HandlerAcceptTrip() http.HandlerFunc {
 
 		httpRequestsTotal.WithLabelValues("HandlerAcceptTrip").Inc()
 		controller.log.Info("Request: accept trip  %s", zap.String("trip_id", tripID))
-		err := controller.s.SetTripStatus(tripID, "DRIVER_FOUND")
+		err := controller.s.OnStatusAccept(tripID)
 		if err != nil {
 			httpRequests5xx.WithLabelValues("HandlerAcceptTrip").Inc()
 			http.Error(w, err.Error(), http.StatusInternalServerError)

@@ -3,15 +3,27 @@ package service
 import (
 	"DriverService/internal/models"
 	"DriverService/internal/repository/inmemory"
+	"context"
+	"fmt"
+	"github.com/segmentio/kafka-go"
+	"os"
 )
 
 type Service struct {
-	repo *inmemory.Repository
+	repo   *inmemory.Repository
+	writer *kafka.Writer
 }
 
 func New() *Service {
+	kafkaAddress := os.Getenv("KAFKA")
+
 	return &Service{
 		repo: inmemory.NewRepository(),
+		writer: &kafka.Writer{
+			Addr:     kafka.TCP(kafkaAddress),
+			Topic:    "commands",
+			Balancer: &kafka.LeastBytes{},
+		},
 	}
 }
 
@@ -31,4 +43,15 @@ func (s *Service) SetTripStatus(tripId string, status string) error {
 
 func (s *Service) AddTrip(trip models.Trip) {
 	s.repo.Add(trip)
+}
+
+func (s *Service) OnStatusAccept(tripID string) error {
+	ctx := context.Background()
+	_ = s.repo.ChangeTripStatus(tripID, "ACCEPTED")
+	fmt.Println(os.Getenv("KAFKA"))
+	err := s.writer.WriteMessages(ctx, kafka.Message{Key: []byte("command"), Value: []byte("abc")})
+	if err != nil {
+		fmt.Println("KAFKA ERROR", err.Error())
+	}
+	return nil
 }
