@@ -23,6 +23,9 @@ func (r *MapRepository) SetDriverLocation(driverId string, location Location) {
 }
 
 func (r *MapRepository) GetAllDrivers() []Driver {
+	r.mx.Lock()
+	defer r.mx.Unlock()
+
 	drivers := make([]Driver, 0)
 	for driverId, location := range r.locations {
 		drivers = append(drivers, CreateDriver(driverId, location))

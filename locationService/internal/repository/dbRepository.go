@@ -10,9 +10,11 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/lib/pq"
 	"log"
+	"sync"
 )
 
 type DbRepository struct {
+	mx sync.Mutex
 	db *sql.DB
 }
 
@@ -47,11 +49,17 @@ func migrateDb(db *sql.DB) error {
 }
 
 func (r *DbRepository) SetDriverLocation(driverId string, location Location) {
+	r.mx.Lock()
+	defer r.mx.Unlock()
+
 	r.db.Exec("UPDATE locations SET lat=$1, lng=$2 WHERE driver_id=$3", location.Lat, location.Lng, driverId)
 	r.db.Exec("INSERT INTO locations (driver_id, lat, lng) SELECT $3, $1, $2 WHERE NOT EXISTS (SELECT 1 FROM locations WHERE driver_id=$3)", location.Lat, location.Lng, driverId)
 }
 
 func (r *DbRepository) GetAllDrivers() []Driver {
+	r.mx.Lock()
+	defer r.mx.Unlock()
+
 	rows, err := r.db.Query("SELECT driver_id, lat, lng FROM locations")
 	if err != nil {
 		log.Fatal(err)
