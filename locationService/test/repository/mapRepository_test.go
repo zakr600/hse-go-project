@@ -1,11 +1,11 @@
-package service
+package repository
 
 import (
 	"github.com/YOUR-USER-OR-ORG-NAME/YOUR-REPO-NAME/internal/repository"
 	"testing"
 )
 
-func TestService(t *testing.T) {
+func TestMapRepository(t *testing.T) {
 	repo := repository.CreateMapRepository()
 
 	repo.SetDriverLocation("0", repository.CreateLocation(0.2, 1.3))

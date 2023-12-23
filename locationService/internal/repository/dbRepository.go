@@ -2,8 +2,12 @@ package repository
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"github.com/YOUR-USER-OR-ORG-NAME/YOUR-REPO-NAME/internal/config"
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/lib/pq"
 	"log"
 )
@@ -19,9 +23,27 @@ func CreateDbRepository(config config.DbConfig) *DbRepository {
 	if err != nil {
 		panic(err)
 	}
+	if migrateErr := migrateDb(db); migrateErr != nil {
+		panic(migrateErr)
+	}
+
 	return &DbRepository{
 		db: db,
 	}
+}
+
+func migrateDb(db *sql.DB) error {
+	driver, err := postgres.WithInstance(db, &postgres.Config{})
+	m, err := migrate.NewWithDatabaseInstance(
+		"file:///app/migrations/", "postgres", driver)
+	if err != nil {
+		return err
+	}
+	err = m.Up()
+	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
+		return err
+	}
+	return nil
 }
 
 func (r *DbRepository) SetDriverLocation(driverId string, location Location) {
