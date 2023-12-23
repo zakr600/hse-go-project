@@ -28,7 +28,7 @@ services:
       - "55679:55679" # zpages extension
       - "9000:9000"
     networks:
-      - db_network
+      - service_network
 
   app_db:
     image: postgres
@@ -46,7 +46,7 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - db_network
+      - service_network
 
   prometheus:
     image: prom/prometheus
@@ -59,6 +59,8 @@ services:
     volumes:
       - ./prometheus:/etc/prometheus
       - prom_data:/prometheus
+    networks:
+      - service_network
 
   grafana:
     image: grafana/grafana
@@ -71,6 +73,8 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=grafana
     volumes:
       - ./grafana:/etc/grafana/provisioning/datasources
+    networks:
+      - service_network
 
   jaeger-all-in-one:
     image: jaegertracing/all-in-one:latest
@@ -82,4 +86,4 @@ services:
 volumes:
   prom_data:
 networks:
-  db_network:
+  service_network:

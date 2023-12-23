@@ -9,6 +9,7 @@ import (
 	"github.com/YOUR-USER-OR-ORG-NAME/YOUR-REPO-NAME/internal/service"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.uber.org/zap"
 	"net/http"
 )
@@ -46,6 +47,7 @@ func getController(serv *service.MainService) http.Handler {
 	r.Use(middleware.Logger)
 	r.Get("/drivers", controller.GetDrivers)
 	r.Post("/drivers/{driver_id}/location", controller.SetDriverLocation)
+	r.Handle("/metrics", promhttp.Handler())
 	return r
 }
 
