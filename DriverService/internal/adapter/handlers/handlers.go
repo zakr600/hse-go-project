@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"DriverService/internal/config"
 	"DriverService/internal/models"
 	"DriverService/internal/service"
 	"DriverService/internal/trip_errors"
@@ -39,11 +40,12 @@ var (
 
 type Controller struct {
 	s   *service.Service
+	cfg *config.Config
 	log *zap.Logger
 }
 
-func NewController(tripsDb *mongo.Collection, log *zap.Logger) *Controller {
-	svc := service.New(tripsDb, log)
+func NewController(cfg *config.Config, tripsDb *mongo.Collection, log *zap.Logger) *Controller {
+	svc := service.New(cfg, tripsDb, log)
 
 	go func() {
 		err := svc.FetchEvents()
@@ -54,6 +56,7 @@ func NewController(tripsDb *mongo.Collection, log *zap.Logger) *Controller {
 
 	return &Controller{
 		s:   svc,
+		cfg: cfg,
 		log: log,
 	}
 }

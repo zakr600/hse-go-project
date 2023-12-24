@@ -1,26 +1,35 @@
 package service
 
 import (
+	"DriverService/internal/config"
 	"DriverService/internal/models"
 	"DriverService/internal/repository"
 	"DriverService/internal/repository/mongo_db"
 	"DriverService/internal/schemes"
 	"context"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"github.com/segmentio/kafka-go"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.uber.org/zap"
+	"net/http"
 	"os"
+)
+
+var (
+	radius = 10.0
 )
 
 type Service struct {
 	repo   repository.Repository
 	writer *kafka.Writer
 	reader *kafka.Reader
+	cfg    *config.Config
 	log    *zap.Logger
 }
 
-func New(tripsDb *mongo.Collection, log *zap.Logger) *Service {
+func New(cfg *config.Config, tripsDb *mongo.Collection, log *zap.Logger) *Service {
 	kafkaAddress := os.Getenv("KAFKA")
 	repo, err := mongo_db.NewRepository(tripsDb)
 
@@ -136,9 +145,17 @@ func (s *Service) OnCancelTrip(tripID string) error {
 func (s *Service) OnCreateTrip(event *schemes.Event) error {
 	s.log.Debug("Trip Created")
 	trip := schemes.EventToTrip(event)
-	err := s.repo.Insert(trip)
+	drivers, err := s.GetDrivers(trip.To.Lat, trip.To.Lng, radius)
 	if err != nil {
 		return err
+	}
+	for _, driver := range drivers {
+		curTrip := trip
+		curTrip.DriverId = driver.DriverId
+		err = s.repo.Insert(curTrip)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -188,4 +205,27 @@ func (s *Service) FetchEvents() error {
 		return err
 	}
 	return nil
+}
+
+func (s *Service) GetDrivers(lat, lng, radius float64) ([]models.Driver, error) {
+	url := fmt.Sprintf("http://%s:%s/drivers?lat=%f&lng=%f&radius=%f", s.cfg.LocationServiceConfig.Host, s.cfg.LocationServiceConfig.Port, lat, lng, radius)
+
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusNotFound {
+		return nil, errors.New("drivers not found")
+	} else if resp.StatusCode != http.StatusOK {
+		return nil, errors.New(fmt.Sprintf("unexpected response status: %d", resp.StatusCode))
+	}
+
+	var drivers []models.Driver
+	if err := json.NewDecoder(resp.Body).Decode(&drivers); err != nil {
+		return nil, err
+	}
+
+	return drivers, nil
 }

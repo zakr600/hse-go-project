@@ -36,7 +36,7 @@ func NewCommand(t string, data map[string]interface{}) Command {
 }
 
 type JsonData struct {
-	Event Event `json:"data"`
+	Event *Event `json:"data"`
 }
 
 type Event struct {

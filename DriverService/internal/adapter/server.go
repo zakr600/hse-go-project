@@ -23,7 +23,7 @@ func New(
 	tripsDb *mongo.Collection,
 ) *Server {
 	router := mux.NewRouter()
-	SetUp(router, log, tripsDb)
+	SetUp(router, log, tripsDb, cfg)
 	server := &Server{
 		log:    log,
 		config: cfg,
@@ -32,8 +32,8 @@ func New(
 	return server
 }
 
-func SetUp(router *mux.Router, log *zap.Logger, tripsDb *mongo.Collection) {
-	controller := handlers.NewController(tripsDb, log)
+func SetUp(router *mux.Router, log *zap.Logger, tripsDb *mongo.Collection, cfg *config.Config) {
+	controller := handlers.NewController(cfg, tripsDb, log)
 	log.Info("Registered metrics handler")
 	router.Handle("/metrics", promhttp.Handler())
 	trips := router.PathPrefix("/trips").Subrouter()

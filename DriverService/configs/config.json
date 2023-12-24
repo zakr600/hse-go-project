@@ -3,7 +3,7 @@
   "serverConfig": {
     "port": "8081"
   },
-  "locationService": {
+  "locationServiceConfig": {
     "port": "8080"
   }
 }
