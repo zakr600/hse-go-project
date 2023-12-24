@@ -2,7 +2,7 @@ package inmemory
 
 import (
 	"DriverService/internal/models"
-	"DriverService/internal/repository/errors"
+	"DriverService/internal/trip_errors"
 	"sync"
 )
 
@@ -33,14 +33,14 @@ func (repo *Repository) Get(id string) (*models.Trip, error) {
 	if value, ok := repo.data[id]; ok {
 		return &value, nil
 	}
-	return nil, errors.NotFoundError{Key: id}
+	return nil, trip_errors.NotFoundError{Key: id}
 }
 
 func (repo *Repository) Add(value models.Trip) error {
 	repo.mu.Lock()
 	defer repo.mu.Unlock()
 	if _, ok := repo.data[value.Id]; ok {
-		return errors.DuplicateKeyError{Key: value.Id}
+		return trip_errors.DuplicateKeyError{Key: value.Id}
 	}
 	repo.data[value.Id] = value
 	return nil
@@ -54,5 +54,5 @@ func (repo *Repository) ChangeTripStatus(id string, status string) error {
 		repo.data[id] = value
 		return nil
 	}
-	return errors.NotFoundError{Key: id}
+	return trip_errors.NotFoundError{Key: id}
 }

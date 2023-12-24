@@ -3,8 +3,11 @@ package handlers
 import (
 	"DriverService/internal/models"
 	"DriverService/internal/service"
+	"DriverService/internal/trip_errors"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
@@ -80,11 +83,21 @@ func (controller *Controller) HandlerGetTripByID() http.HandlerFunc {
 		vars := mux.Vars(r)
 
 		tripID := vars["trip_id"]
-		controller.log.Info("Request: get_trip %s", zap.String("trip_id", tripID))
+		controller.log.Debug("Request: get_trip %s", zap.String("trip_id", tripID))
+		if _, err := uuid.Parse(tripID); err != nil {
+			httpRequests4xx.WithLabelValues("HandlerGetTripByID").Inc()
+			http.Error(w, fmt.Sprintf("Incorrect trip id: %s", err.Error()), http.StatusBadRequest)
+			return
+		}
+
 		trip, err := controller.s.GetTrip(tripID)
 		httpRequestsTotal.WithLabelValues("HandlerGetTripByID").Inc()
-		if err != nil {
-			httpRequests5xx.WithLabelValues("HandlerGetTripByID").Inc()
+
+		if errors.Is(err, trip_errors.NotFoundError{}) {
+			httpRequests4xx.WithLabelValues("HandlerGetTripByID").Inc()
+			http.Error(w, "Trip not found", http.StatusNotFound)
+			return
+		} else if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -103,12 +116,15 @@ func (controller *Controller) HandlerCancelTrip() http.HandlerFunc {
 
 		vars := mux.Vars(r)
 		tripID := vars["trip_id"]
-
 		httpRequestsTotal.WithLabelValues("HandlerCancelTrip").Inc()
-		controller.log.Info("Request: cancel trip  %s", zap.String("trip_id", tripID))
+		controller.log.Debug("Request: cancel trip  %s", zap.String("trip_id", tripID))
 		err := controller.s.OnCancelTrip(tripID)
-		if err != nil {
-			httpRequests5xx.WithLabelValues("HandlerCancelTrip").Inc()
+
+		if errors.Is(err, trip_errors.NotFoundError{}) {
+			httpRequests4xx.WithLabelValues("HandlerGetTripByID").Inc()
+			http.Error(w, "Trip not found", http.StatusNotFound)
+			return
+		} else if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -121,12 +137,14 @@ func (controller *Controller) HandlerAcceptTrip() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		tripID := vars["trip_id"]
-
 		httpRequestsTotal.WithLabelValues("HandlerAcceptTrip").Inc()
-		controller.log.Info("Request: accept trip  %s", zap.String("trip_id", tripID))
+		controller.log.Debug("Request: accept trip  %s", zap.String("trip_id", tripID))
 		err := controller.s.OnAcceptTrip(tripID)
-		if err != nil {
-			httpRequests5xx.WithLabelValues("HandlerAcceptTrip").Inc()
+		if errors.Is(err, trip_errors.NotFoundError{}) {
+			httpRequests4xx.WithLabelValues("HandlerGetTripByID").Inc()
+			http.Error(w, "Trip not found", http.StatusNotFound)
+			return
+		} else if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -142,10 +160,13 @@ func (controller *Controller) HandlerStartTrip() http.HandlerFunc {
 		tripID := vars["trip_id"]
 
 		httpRequestsTotal.WithLabelValues("HandlerStartTrip").Inc()
-		controller.log.Info("Request: start trip  %s", zap.String("trip_id", tripID))
+		controller.log.Debug("Request: start trip  %s", zap.String("trip_id", tripID))
 		err := controller.s.OnStartTrip(tripID)
-		if err != nil {
-			httpRequests5xx.WithLabelValues("HandlerStartTrip").Inc()
+		if errors.Is(err, trip_errors.NotFoundError{}) {
+			httpRequests4xx.WithLabelValues("HandlerGetTripByID").Inc()
+			http.Error(w, "Trip not found", http.StatusNotFound)
+			return
+		} else if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -161,10 +182,13 @@ func (controller *Controller) HandlerEndTrip() http.HandlerFunc {
 		tripID := vars["trip_id"]
 
 		httpRequestsTotal.WithLabelValues("HandlerEndTrip").Inc()
-		controller.log.Info("Request: end trip  %s", zap.String("trip_id", tripID))
+		controller.log.Debug("Request: end trip  %s", zap.String("trip_id", tripID))
 		err := controller.s.OnEndTrip(tripID)
-		if err != nil {
-			httpRequests5xx.WithLabelValues("HandlerEndTrip").Inc()
+		if errors.Is(err, trip_errors.NotFoundError{}) {
+			httpRequests4xx.WithLabelValues("HandlerGetTripByID").Inc()
+			http.Error(w, "Trip not found", http.StatusNotFound)
+			return
+		} else if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}

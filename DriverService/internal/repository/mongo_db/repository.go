@@ -2,7 +2,7 @@ package mongo_db
 
 import (
 	"DriverService/internal/models"
-	errors2 "DriverService/internal/repository/errors"
+	errors2 "DriverService/internal/trip_errors"
 	"context"
 	"errors"
 	"go.mongodb.org/mongo-driver/bson"

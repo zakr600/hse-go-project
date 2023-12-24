@@ -90,7 +90,7 @@ func (s *Service) OnStartTrip(tripID string) error {
 	}
 	command := schemes.NewCommand(schemes.AcceptType, data)
 
-	err := s.writeCommand(command)
+	err = s.writeCommand(command)
 	if err != nil {
 		return err
 	}
@@ -108,7 +108,7 @@ func (s *Service) OnEndTrip(tripID string) error {
 	}
 	command := schemes.NewCommand(schemes.AcceptType, data)
 
-	err := s.writeCommand(command)
+	err = s.writeCommand(command)
 	if err != nil {
 		return err
 	}
@@ -127,7 +127,7 @@ func (s *Service) OnCancelTrip(tripID string) error {
 	}
 	command := schemes.NewCommand(schemes.AcceptType, data)
 
-	err := s.writeCommand(command)
+	err = s.writeCommand(command)
 	if err != nil {
 		return err
 	}

@@ -1,4 +1,4 @@
-package errors
+package trip_errors
 
 import "fmt"
 
