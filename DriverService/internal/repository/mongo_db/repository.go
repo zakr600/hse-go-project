@@ -50,7 +50,7 @@ func (repo *Repository) Get(id string) (*models.Trip, error) {
 	return &trip, nil
 }
 
-func (repo *Repository) Add(value models.Trip) error {
+func (repo *Repository) Insert(value models.Trip) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -58,7 +58,7 @@ func (repo *Repository) Add(value models.Trip) error {
 	return err
 }
 
-func (repo *Repository) ChangeTripStatus(id string, status string) error {
+func (repo *Repository) SetStatus(id string, status string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 

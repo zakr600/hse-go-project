@@ -36,7 +36,7 @@ func (repo *Repository) Get(id string) (*models.Trip, error) {
 	return nil, trip_errors.NotFoundError{Key: id}
 }
 
-func (repo *Repository) Add(value models.Trip) error {
+func (repo *Repository) Insert(value models.Trip) error {
 	repo.mu.Lock()
 	defer repo.mu.Unlock()
 	if _, ok := repo.data[value.Id]; ok {
@@ -46,7 +46,7 @@ func (repo *Repository) Add(value models.Trip) error {
 	return nil
 }
 
-func (repo *Repository) ChangeTripStatus(id string, status string) error {
+func (repo *Repository) SetStatus(id string, status string) error {
 	repo.mu.Lock()
 	defer repo.mu.Unlock()
 	if value, ok := repo.data[id]; ok {

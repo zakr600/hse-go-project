@@ -57,7 +57,7 @@ func (s *Service) GetTrip(tripId string) (*models.Trip, error) {
 }
 
 func (s *Service) OnAcceptTrip(tripID string) error {
-	err := s.repo.ChangeTripStatus(tripID, "ACCEPTED")
+	err := s.repo.SetStatus(tripID, "ACCEPTED")
 	if err != nil {
 		return err
 	}
@@ -80,7 +80,7 @@ func (s *Service) OnAcceptTrip(tripID string) error {
 }
 
 func (s *Service) OnStartTrip(tripID string) error {
-	err := s.repo.ChangeTripStatus(tripID, "STARTED")
+	err := s.repo.SetStatus(tripID, "STARTED")
 	if err != nil {
 		return err
 	}
@@ -98,7 +98,7 @@ func (s *Service) OnStartTrip(tripID string) error {
 }
 
 func (s *Service) OnEndTrip(tripID string) error {
-	err := s.repo.ChangeTripStatus(tripID, "ENDED")
+	err := s.repo.SetStatus(tripID, "ENDED")
 	if err != nil {
 		return err
 	}
@@ -116,7 +116,7 @@ func (s *Service) OnEndTrip(tripID string) error {
 }
 
 func (s *Service) OnCancelTrip(tripID string) error {
-	err := s.repo.ChangeTripStatus(tripID, "CANCELLED")
+	err := s.repo.SetStatus(tripID, "CANCELLED")
 	if err != nil {
 		return err
 	}
@@ -142,7 +142,7 @@ func (s *Service) OnCreateTrip(event schemes.Event) error {
 }
 
 func (s *Service) AddTrip(trip models.Trip) {
-	err := s.repo.Add(trip)
+	err := s.repo.Insert(trip)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
