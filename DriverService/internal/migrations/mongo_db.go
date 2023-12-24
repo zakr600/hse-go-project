@@ -19,10 +19,13 @@ func NewMigration(client *mongo.Client, db *mongo.Database) *Migration {
 	}
 }
 func (m *Migration) Run(path string) error {
-	dbDriver, _ := mongodb.WithInstance(
+	dbDriver, err := mongodb.WithInstance(
 		m.client,
 		&mongodb.Config{DatabaseName: "driver_service"},
 	)
+	if err != nil {
+		return err
+	}
 
 	fileSrc, err := (&file.File{}).Open(path)
 	if err != nil {

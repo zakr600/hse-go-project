@@ -39,11 +39,14 @@ type Controller struct {
 	log *zap.Logger
 }
 
-func NewController(trips_db *mongo.Collection, log *zap.Logger) *Controller {
-	svc := service.New(trips_db)
+func NewController(tripsDb *mongo.Collection, log *zap.Logger) *Controller {
+	svc := service.New(tripsDb)
 
 	go func() {
-		_ = svc.FetchEvents()
+		err := svc.FetchEvents()
+		if err != nil {
+			log.Error(fmt.Sprint("Error while fetching events", err.Error()))
+		}
 	}()
 
 	return &Controller{

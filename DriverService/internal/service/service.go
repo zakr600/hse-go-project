@@ -57,7 +57,10 @@ func (s *Service) GetTrip(tripId string) (*models.Trip, error) {
 }
 
 func (s *Service) OnAcceptTrip(tripID string) error {
-	_ = s.repo.ChangeTripStatus(tripID, "ACCEPTED")
+	err := s.repo.ChangeTripStatus(tripID, "ACCEPTED")
+	if err != nil {
+		return err
+	}
 	trip, err := s.repo.Get(tripID)
 	if err != nil {
 		return err
@@ -77,7 +80,10 @@ func (s *Service) OnAcceptTrip(tripID string) error {
 }
 
 func (s *Service) OnStartTrip(tripID string) error {
-	_ = s.repo.ChangeTripStatus(tripID, "STARTED")
+	err := s.repo.ChangeTripStatus(tripID, "STARTED")
+	if err != nil {
+		return err
+	}
 
 	data := map[string]interface{}{
 		"trip_id": tripID,
@@ -92,7 +98,10 @@ func (s *Service) OnStartTrip(tripID string) error {
 }
 
 func (s *Service) OnEndTrip(tripID string) error {
-	_ = s.repo.ChangeTripStatus(tripID, "ENDED")
+	err := s.repo.ChangeTripStatus(tripID, "ENDED")
+	if err != nil {
+		return err
+	}
 
 	data := map[string]interface{}{
 		"trip_id": tripID,
@@ -107,7 +116,10 @@ func (s *Service) OnEndTrip(tripID string) error {
 }
 
 func (s *Service) OnCancelTrip(tripID string) error {
-	_ = s.repo.ChangeTripStatus(tripID, "CANCELLED")
+	err := s.repo.ChangeTripStatus(tripID, "CANCELLED")
+	if err != nil {
+		return err
+	}
 
 	data := map[string]interface{}{
 		"trip_id": tripID,
