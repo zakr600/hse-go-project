@@ -43,7 +43,7 @@ type Controller struct {
 }
 
 func NewController(tripsDb *mongo.Collection, log *zap.Logger) *Controller {
-	svc := service.New(tripsDb)
+	svc := service.New(tripsDb, log)
 
 	go func() {
 		err := svc.FetchEvents()
@@ -69,11 +69,21 @@ func (controller *Controller) HandlerGetTrips() http.HandlerFunc {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
 		if err := json.NewEncoder(w).Encode(trips); err != nil {
 			httpRequests5xx.WithLabelValues("HandlerGetTrips").Inc()
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+
+		response := make(map[string]interface{})
+		response["description"] = "Success operation"
+		if err := json.NewEncoder(w).Encode(response); err != nil {
+			httpRequests5xx.WithLabelValues("HandlerGetTrips").Inc()
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
 		httpRequests2xx.WithLabelValues("HandlerGetTrips").Inc()
 	}
 }
@@ -102,12 +112,21 @@ func (controller *Controller) HandlerGetTripByID() http.HandlerFunc {
 			return
 		}
 
-		httpRequests2xx.WithLabelValues("HandlerGetTripByID").Inc()
 		w.Header().Set("Content-Type", "application/json")
 		if err := json.NewEncoder(w).Encode(*trip); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+
+		response := make(map[string]interface{})
+		response["description"] = "Success operation"
+		if err := json.NewEncoder(w).Encode(response); err != nil {
+			httpRequests5xx.WithLabelValues("HandlerGetTrips").Inc()
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		httpRequests2xx.WithLabelValues("HandlerGetTripByID").Inc()
 	}
 }
 
@@ -128,8 +147,15 @@ func (controller *Controller) HandlerCancelTrip() http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		response := make(map[string]interface{})
+		response["description"] = "Success operation"
+		if err := json.NewEncoder(w).Encode(response); err != nil {
+			httpRequests5xx.WithLabelValues("HandlerGetTrips").Inc()
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
 		httpRequests2xx.WithLabelValues("HandlerCancelTrip").Inc()
-		return
 	}
 }
 
@@ -148,8 +174,15 @@ func (controller *Controller) HandlerAcceptTrip() http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		response := make(map[string]interface{})
+		response["description"] = "Success operation"
+		if err := json.NewEncoder(w).Encode(response); err != nil {
+			httpRequests5xx.WithLabelValues("HandlerGetTrips").Inc()
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
 		httpRequests2xx.WithLabelValues("HandlerAcceptTrip").Inc()
-		return
 	}
 }
 
@@ -170,8 +203,15 @@ func (controller *Controller) HandlerStartTrip() http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		response := make(map[string]interface{})
+		response["description"] = "Success operation"
+		if err := json.NewEncoder(w).Encode(response); err != nil {
+			httpRequests5xx.WithLabelValues("HandlerGetTrips").Inc()
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
 		httpRequests2xx.WithLabelValues("HandlerStartTrip").Inc()
-		return
 	}
 }
 
@@ -192,8 +232,15 @@ func (controller *Controller) HandlerEndTrip() http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		response := make(map[string]interface{})
+		response["description"] = "Success operation"
+		if err := json.NewEncoder(w).Encode(response); err != nil {
+			httpRequests5xx.WithLabelValues("HandlerGetTrips").Inc()
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
 		httpRequests2xx.WithLabelValues("HandlerEndTrip").Inc()
-		return
 	}
 }
 
@@ -204,7 +251,19 @@ func (controller *Controller) HandlerAddTrip() http.HandlerFunc {
 			Id:       fmt.Sprintf("%v", rand.Int()),
 			DriverId: fmt.Sprintf("%v", rand.Int()),
 		}
-		controller.s.AddTrip(trip)
+		err := controller.s.AddTrip(trip)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		response := make(map[string]interface{})
+		response["description"] = "Success operation"
+		if err := json.NewEncoder(w).Encode(response); err != nil {
+			httpRequests5xx.WithLabelValues("HandlerGetTrips").Inc()
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
 		_, _ = io.WriteString(w, "Trip added")
 	}
 }

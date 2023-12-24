@@ -27,7 +27,7 @@ func NewApplication(cfg *config.Config) *Application {
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(cfg.MongoURI))
 	trips := client.Database("driver_service").Collection("trips")
 
-	migration := migrations.NewMigration(client, client.Database("driver_service"))
+	migration := migrations.NewMigration(client, client.Database("driver_service"), log)
 	err = migration.Run(cfg.MongoMigrationsPath)
 	if err != nil {
 		fmt.Println(err)
@@ -43,6 +43,7 @@ func NewApplication(cfg *config.Config) *Application {
 }
 
 func (a *Application) Run(ctx context.Context) error {
+	a.log.Info("Starting Application...")
 	if a.server != nil {
 		err := a.server.Start()
 		if err != nil {
@@ -53,6 +54,7 @@ func (a *Application) Run(ctx context.Context) error {
 }
 
 func (a *Application) Stop(ctx context.Context) error {
+	a.log.Info("Stopping Application...")
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if a.mongoClient != nil {

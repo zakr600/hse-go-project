@@ -5,20 +5,24 @@ import (
 	"github.com/golang-migrate/migrate/v4/database/mongodb"
 	"github.com/golang-migrate/migrate/v4/source/file"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.uber.org/zap"
 )
 
 type Migration struct {
 	client *mongo.Client
 	db     *mongo.Database
+	log    *zap.Logger
 }
 
-func NewMigration(client *mongo.Client, db *mongo.Database) *Migration {
+func NewMigration(client *mongo.Client, db *mongo.Database, log *zap.Logger) *Migration {
 	return &Migration{
 		client: client,
 		db:     db,
+		log:    log,
 	}
 }
 func (m *Migration) Run(path string) error {
+	m.log.Info("Running migration")
 	dbDriver, err := mongodb.WithInstance(
 		m.client,
 		&mongodb.Config{DatabaseName: "driver_service"},

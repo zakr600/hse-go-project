@@ -27,7 +27,7 @@ func main() {
 
 	go func() {
 		if err := app.Run(ctx); err != nil {
-			log.Println("Application returned with error:", err.Error())
+			log.Fatal("Application returned with error:", err.Error())
 		}
 	}()
 
@@ -36,7 +36,7 @@ func main() {
 
 	log.Printf("Received signal: %s\n", <-sigChan)
 
-	timeAfterSignal := 0 * time.Second
+	timeAfterSignal := 1 * time.Second
 	log.Printf("Termination in %s\n", timeAfterSignal)
 	time.Sleep(timeAfterSignal)
 

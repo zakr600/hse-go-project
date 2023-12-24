@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"github.com/segmentio/kafka-go"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.uber.org/zap"
 	"os"
 )
 
@@ -17,14 +18,15 @@ type Service struct {
 	repo   repository.Repository
 	writer *kafka.Writer
 	reader *kafka.Reader
+	log    *zap.Logger
 }
 
-func New(tripsDb *mongo.Collection) *Service {
+func New(tripsDb *mongo.Collection, log *zap.Logger) *Service {
 	kafkaAddress := os.Getenv("KAFKA")
 	repo, err := mongo_db.NewRepository(tripsDb)
 
 	if err != nil {
-		fmt.Println(err.Error())
+		log.Error(err.Error())
 	}
 	return &Service{
 		repo: repo,
@@ -40,15 +42,13 @@ func New(tripsDb *mongo.Collection) *Service {
 			MinBytes: 10e3, // 10KB
 			MaxBytes: 10e6, // 10MB
 		}),
+		log: log,
 	}
 }
 
 func (s *Service) GetTrips() ([]models.Trip, error) {
-	trips, err := s.repo.GetAllTrips() // TODO обработка ошибки
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-	return trips, nil
+	trips, err := s.repo.GetAllTrips()
+	return trips, err
 }
 
 func (s *Service) GetTrip(tripId string) (*models.Trip, error) {
@@ -141,11 +141,12 @@ func (s *Service) OnCreateTrip(event schemes.Event) error {
 	return nil
 }
 
-func (s *Service) AddTrip(trip models.Trip) {
+func (s *Service) AddTrip(trip models.Trip) error {
 	err := s.repo.Insert(trip)
 	if err != nil {
-		fmt.Println(err.Error())
+		s.log.Error(err.Error())
 	}
+	return nil
 }
 
 func (s *Service) writeCommand(cmd schemes.Command) error {
@@ -165,18 +166,18 @@ func (s *Service) FetchEvents() error {
 	for {
 		m, err := s.reader.ReadMessage(context.Background())
 		if err != nil {
-			// log ERROR
+			s.log.Error(err.Error())
 			break
 		}
 		var jsonData schemes.JsonData
 		err = json.Unmarshal(m.Value, &jsonData)
 		if err != nil {
-			// log error
+			s.log.Error(err.Error())
 			continue
 		}
 		err = s.OnCreateTrip(jsonData.Event)
 		if err != nil {
-			// log error
+			s.log.Error(err.Error())
 			continue
 		}
 	}
