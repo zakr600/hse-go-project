@@ -7,7 +7,6 @@ import (
 	"DriverService/internal/schemes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"github.com/segmentio/kafka-go"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.uber.org/zap"
@@ -134,10 +133,13 @@ func (s *Service) OnCancelTrip(tripID string) error {
 	return nil
 }
 
-func (s *Service) OnCreateTrip(event schemes.Event) error {
-	fmt.Println("Trip created")
-	fmt.Println("Event", event)
-
+func (s *Service) OnCreateTrip(event *schemes.Event) error {
+	s.log.Debug("Trip Created")
+	trip := schemes.EventToTrip(event)
+	err := s.repo.Insert(trip)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 

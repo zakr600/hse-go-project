@@ -40,10 +40,21 @@ type JsonData struct {
 }
 
 type Event struct {
-	TripID  string               `json:"trip_id"`
-	OfferID string               `json:"offer_id"`
-	Price   models.Money         `json:"price"`
-	From    models.LatLngLiteral `json:"from"`
-	To      models.LatLngLiteral `json:"to"`
-	Status  string               `json:"status"`
+	TripID  string                `json:"trip_id"`
+	OfferID string                `json:"offer_id"`
+	Price   *models.Money         `json:"price"`
+	From    *models.LatLngLiteral `json:"from"`
+	To      *models.LatLngLiteral `json:"to"`
+	Status  string                `json:"status"`
+}
+
+func EventToTrip(e *Event) models.Trip {
+	return models.Trip{
+		Id:       e.TripID,
+		DriverId: "",
+		From:     e.From,
+		To:       e.To,
+		Price:    e.Price,
+		Status:   e.Status,
+	}
 }
