@@ -67,7 +67,7 @@ func (s *Service) OnAcceptTrip(tripID string) error {
 		"trip_id":   tripID,
 		"driver_id": trip.DriverId,
 	}
-	command := schemes.NewScheme(schemes.AcceptType, data)
+	command := schemes.NewCommand(schemes.AcceptType, data)
 
 	err = s.writeCommand(command)
 	if err != nil {
@@ -82,7 +82,7 @@ func (s *Service) OnStartTrip(tripID string) error {
 	data := map[string]interface{}{
 		"trip_id": tripID,
 	}
-	command := schemes.NewScheme(schemes.AcceptType, data)
+	command := schemes.NewCommand(schemes.AcceptType, data)
 
 	err := s.writeCommand(command)
 	if err != nil {
@@ -97,7 +97,7 @@ func (s *Service) OnEndTrip(tripID string) error {
 	data := map[string]interface{}{
 		"trip_id": tripID,
 	}
-	command := schemes.NewScheme(schemes.AcceptType, data)
+	command := schemes.NewCommand(schemes.AcceptType, data)
 
 	err := s.writeCommand(command)
 	if err != nil {
@@ -113,7 +113,7 @@ func (s *Service) OnCancelTrip(tripID string) error {
 		"trip_id": tripID,
 		"reason":  "Cancelled",
 	}
-	command := schemes.NewScheme(schemes.AcceptType, data)
+	command := schemes.NewCommand(schemes.AcceptType, data)
 
 	err := s.writeCommand(command)
 	if err != nil {
@@ -136,7 +136,7 @@ func (s *Service) AddTrip(trip models.Trip) {
 	}
 }
 
-func (s *Service) writeCommand(cmd schemes.Scheme) error {
+func (s *Service) writeCommand(cmd schemes.Command) error {
 	msgBytes, err := json.Marshal(cmd)
 	if err != nil {
 		return err

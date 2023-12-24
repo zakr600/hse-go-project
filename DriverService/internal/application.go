@@ -4,6 +4,7 @@ import (
 	"DriverService/internal/adapter"
 	"DriverService/internal/config"
 	"DriverService/internal/logger"
+	"DriverService/internal/migrations"
 	"context"
 	"fmt"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -25,6 +26,12 @@ func NewApplication(cfg *config.Config) *Application {
 	defer cancel()
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(cfg.MongoURI))
 	trips := client.Database("driver_service").Collection("trips")
+
+	migration := migrations.NewMigration(client, client.Database("driver_service"))
+	err = migration.Run(cfg.MongoMigrationsPath)
+	if err != nil {
+		fmt.Println(err)
+	}
 
 	server := adapter.New(log, cfg, trips)
 

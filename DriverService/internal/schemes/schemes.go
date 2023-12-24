@@ -15,7 +15,7 @@ const (
 	appJson      = "application/json"
 )
 
-type Scheme struct {
+type Command struct {
 	ID              string                 `json:"id"`
 	Source          string                 `json:"source"`
 	Type            string                 `json:"type"`
@@ -24,8 +24,8 @@ type Scheme struct {
 	Data            map[string]interface{} `json:"data"`
 }
 
-func NewScheme(t string, data map[string]interface{}) Scheme {
-	return Scheme{
+func NewCommand(t string, data map[string]interface{}) Command {
+	return Command{
 		ID:              uuid.New().String(),
 		Source:          driverSource,
 		Type:            t,

@@ -10,19 +10,22 @@ import (
 )
 
 var (
-	DriverServerPort        = "DRIVER_SERVER_PORT"
-	DriverServerHost        = "DRIVER_SERVER_HOST"
-	MongoURI                = "MONGO_URI"
-	Debug                   = "DRIVER_SERVICE_DEBUG"
-	DefaultDriverServerPort = "8081"
-	DefaultDriverServerHost = "localhost"
-	DefaultMongoURI         = "mongodb://mongodb:27017"
+	DriverServerPort           = "DRIVER_SERVER_PORT"
+	DriverServerHost           = "DRIVER_SERVER_HOST"
+	MongoURI                   = "MONGO_URI"
+	MongoMigrationsPath        = "MONGO_MIGRATIONS_PATH"
+	Debug                      = "DRIVER_SERVICE_DEBUG"
+	DefaultDriverServerPort    = "8081"
+	DefaultDriverServerHost    = "localhost"
+	DefaultMongoURI            = "mongodb://mongodb:27017"
+	DefaultMongoMigrationsPath = "./migrations"
 )
 
 type Config struct {
-	Debug        bool          `json:"debug"`
-	ServerConfig *ServerConfig `json:"serverConfig"`
-	MongoURI     string        `json:"mongoUri"`
+	Debug               bool          `json:"debug"`
+	ServerConfig        *ServerConfig `json:"serverConfig"`
+	MongoURI            string        `json:"mongoUri"`
+	MongoMigrationsPath string        `json:"mongoMigrationsPath"`
 }
 
 type ServerConfig struct {
@@ -52,6 +55,7 @@ func GetConfig() (*Config, error) {
 	serverPort := GetEnvString(DriverServerPort, DefaultDriverServerPort)
 	serverHost := GetEnvString(DriverServerHost, DefaultDriverServerHost)
 	MongoURI := GetEnvString(MongoURI, DefaultMongoURI)
+	MongoMigrationsPath := GetEnvString(MongoMigrationsPath, DefaultMongoMigrationsPath)
 
 	cfg := &ServerConfig{
 		Host: serverHost,
@@ -60,9 +64,10 @@ func GetConfig() (*Config, error) {
 
 	debug := GetEnvBool(Debug, false)
 	return &Config{
-		Debug:        debug,
-		ServerConfig: cfg,
-		MongoURI:     MongoURI,
+		Debug:               debug,
+		ServerConfig:        cfg,
+		MongoURI:            MongoURI,
+		MongoMigrationsPath: MongoMigrationsPath,
 	}, nil
 }
 
