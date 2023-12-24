@@ -1,4 +1,4 @@
-package test
+package inmemory_repo_test
 
 import (
 	"DriverService/internal/models"
@@ -29,7 +29,7 @@ func GenerateTrips() []models.Trip {
 				Amount:   rand.Float64()*100 + 10,
 				Currency: "USD",
 			},
-			Status: "completed",
+			Status: "",
 		}
 	}
 	return trips

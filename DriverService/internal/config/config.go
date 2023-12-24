@@ -47,9 +47,9 @@ func GetConfigFromFile(configPath string) (*Config, error) {
 	return &cfg, nil
 }
 
-func GetConfig() (*Config, error) {
+func GetConfig(useDefaults bool) (*Config, error) {
 	err := godotenv.Load()
-	if err != nil {
+	if !useDefaults && err != nil {
 		return &Config{}, errors.New("failed to load env")
 	}
 	serverPort := GetEnvString(DriverServerPort, DefaultDriverServerPort)
