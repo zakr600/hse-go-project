@@ -1,4 +1,4 @@
-package test
+package inmemory_repo
 
 import (
 	"DriverService/internal/models"
