@@ -12,6 +12,6 @@ var _ Repository = &inmemory.Repository{}
 type Repository interface {
 	GetAllTrips() ([]models.Trip, error)
 	Get(id string) (*models.Trip, error)
-	Add(value models.Trip) error
-	ChangeTripStatus(id string, status string) error
+	Insert(value models.Trip) error
+	SetStatus(id string, status string) error
 }

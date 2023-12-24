@@ -1,0 +1,64 @@
+[
+  {
+    "create": "trips"
+  },
+  {
+    "command": {
+      "collMod": "trips",
+      "validator": {
+        "$jsonSchema": {
+          "bsonType": "object",
+          "required": ["id", "driverId", "from", "to", "price", "status"],
+          "properties": {
+            "id": {
+              "bsonType": "string"
+            },
+            "driverId": {
+              "bsonType": "string"
+            },
+            "from": {
+              "bsonType": "object",
+              "required": ["lat", "lng"],
+              "properties": {
+                "lat": {
+                  "bsonType": "double"
+                },
+                "lng": {
+                  "bsonType": "double"
+                }
+              }
+            },
+            "to": {
+              "bsonType": "object",
+              "required": ["lat", "lng"],
+              "properties": {
+                "lat": {
+                  "bsonType": "double"
+                },
+                "lng": {
+                  "bsonType": "double"
+                }
+              }
+            },
+            "price": {
+              "bsonType": "object",
+              "required": ["amount", "currency"],
+              "properties": {
+                "amount": {
+                  "bsonType": "double"
+                },
+                "currency": {
+                  "bsonType": "string"
+                }
+              }
+            },
+            "status": {
+              "bsonType": "string"
+            }
+          }
+        }
+      },
+      "validationLevel": "strict"
+    }
+  }
+]

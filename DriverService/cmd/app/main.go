@@ -13,21 +13,21 @@ import (
 )
 
 func main() {
-	cfg, err := config.GetConfig()
+	cfg, err := config.GetConfig(false)
 	if err != nil {
 		log.Fatal("Failed to load config: ", err.Error())
 	}
 
 	app, err := createApplication(cfg)
 	if err != nil {
-		log.Fatal("Failed to create the application: ", err)
+		log.Fatal("Failed to create the application: ", err.Error())
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
 
 	go func() {
 		if err := app.Run(ctx); err != nil {
-			log.Println("Application returned with error:", err)
+			log.Fatal("Application returned with error:", err.Error())
 		}
 	}()
 
@@ -36,7 +36,7 @@ func main() {
 
 	log.Printf("Received signal: %s\n", <-sigChan)
 
-	timeAfterSignal := 0 * time.Second
+	timeAfterSignal := 1 * time.Second
 	log.Printf("Termination in %s\n", timeAfterSignal)
 	time.Sleep(timeAfterSignal)
 

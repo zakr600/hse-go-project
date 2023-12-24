@@ -10,22 +10,35 @@ import (
 )
 
 var (
-	DriverServerPort        = "DRIVER_SERVER_PORT"
-	DriverServerHost        = "DRIVER_SERVER_HOST"
-	MongoURI                = "MONGO_URI"
-	Debug                   = "DRIVER_SERVICE_DEBUG"
-	DefaultDriverServerPort = "8081"
-	DefaultDriverServerHost = "localhost"
-	DefaultMongoURI         = "mongodb://mongodb:27017"
+	DriverServerPort           = "DRIVER_SERVER_PORT"
+	DriverServerHost           = "DRIVER_SERVER_HOST"
+	MongoURI                   = "MONGO_URI"
+	MongoMigrationsPath        = "MONGO_MIGRATIONS_PATH"
+	Debug                      = "DRIVER_SERVICE_DEBUG"
+	LocationServicePort        = "LOCATION_SERVICE_PORT"
+	LocationServiceHost        = "LOCATION_SERVICE_HOST"
+	DefaultDriverServerPort    = "8081"
+	DefaultDriverServerHost    = "localhost"
+	DefaultMongoURI            = "mongodb://mongodb:27017"
+	DefaultMongoMigrationsPath = "./migrations"
+	DefaultLocationServicePort = "8080"
+	DefaultLocationServiceHost = "localhost"
 )
 
 type Config struct {
-	Debug        bool          `json:"debug"`
-	ServerConfig *ServerConfig `json:"serverConfig"`
-	MongoURI     string        `json:"mongoUri"`
+	Debug                 bool                   `json:"debug"`
+	ServerConfig          *ServerConfig          `json:"serverConfig"`
+	MongoURI              string                 `json:"mongoUri"`
+	MongoMigrationsPath   string                 `json:"mongoMigrationsPath"`
+	LocationServiceConfig *LocationServiceConfig `json:locationServiceConfig`
 }
 
 type ServerConfig struct {
+	Host string `json:"host"`
+	Port string `json:"port"`
+}
+
+type LocationServiceConfig struct {
 	Host string `json:"host"`
 	Port string `json:"port"`
 }
@@ -44,25 +57,36 @@ func GetConfigFromFile(configPath string) (*Config, error) {
 	return &cfg, nil
 }
 
-func GetConfig() (*Config, error) {
+func GetConfig(useDefaults bool) (*Config, error) {
 	err := godotenv.Load()
-	if err != nil {
+	if !useDefaults && err != nil {
 		return &Config{}, errors.New("failed to load env")
 	}
 	serverPort := GetEnvString(DriverServerPort, DefaultDriverServerPort)
 	serverHost := GetEnvString(DriverServerHost, DefaultDriverServerHost)
 	MongoURI := GetEnvString(MongoURI, DefaultMongoURI)
+	MongoMigrationsPath := GetEnvString(MongoMigrationsPath, DefaultMongoMigrationsPath)
 
-	cfg := &ServerConfig{
+	serverCfg := &ServerConfig{
 		Host: serverHost,
 		Port: serverPort,
 	}
 
+	LocationServiceHost := GetEnvString(LocationServiceHost, DefaultLocationServiceHost)
+	LocationServicePort := GetEnvString(LocationServicePort, DefaultLocationServicePort)
+
+	locationCfg := &LocationServiceConfig{
+		Host: LocationServiceHost,
+		Port: LocationServicePort,
+	}
+
 	debug := GetEnvBool(Debug, false)
 	return &Config{
-		Debug:        debug,
-		ServerConfig: cfg,
-		MongoURI:     MongoURI,
+		Debug:                 debug,
+		ServerConfig:          serverCfg,
+		MongoURI:              MongoURI,
+		MongoMigrationsPath:   MongoMigrationsPath,
+		LocationServiceConfig: locationCfg,
 	}, nil
 }
 

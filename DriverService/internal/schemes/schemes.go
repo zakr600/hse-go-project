@@ -15,7 +15,7 @@ const (
 	appJson      = "application/json"
 )
 
-type Scheme struct {
+type Command struct {
 	ID              string                 `json:"id"`
 	Source          string                 `json:"source"`
 	Type            string                 `json:"type"`
@@ -24,8 +24,8 @@ type Scheme struct {
 	Data            map[string]interface{} `json:"data"`
 }
 
-func NewScheme(t string, data map[string]interface{}) Scheme {
-	return Scheme{
+func NewCommand(t string, data map[string]interface{}) Command {
+	return Command{
 		ID:              uuid.New().String(),
 		Source:          driverSource,
 		Type:            t,
@@ -36,14 +36,25 @@ func NewScheme(t string, data map[string]interface{}) Scheme {
 }
 
 type JsonData struct {
-	Event Event `json:"data"`
+	Event *Event `json:"data"`
 }
 
 type Event struct {
-	TripID  string               `json:"trip_id"`
-	OfferID string               `json:"offer_id"`
-	Price   models.Money         `json:"price"`
-	From    models.LatLngLiteral `json:"from"`
-	To      models.LatLngLiteral `json:"to"`
-	Status  string               `json:"status"`
+	TripID  string                `json:"trip_id"`
+	OfferID string                `json:"offer_id"`
+	Price   *models.Money         `json:"price"`
+	From    *models.LatLngLiteral `json:"from"`
+	To      *models.LatLngLiteral `json:"to"`
+	Status  string                `json:"status"`
+}
+
+func EventToTrip(e *Event) models.Trip {
+	return models.Trip{
+		Id:       e.TripID,
+		DriverId: "",
+		From:     e.From,
+		To:       e.To,
+		Price:    e.Price,
+		Status:   e.Status,
+	}
 }
