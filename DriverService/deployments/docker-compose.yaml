@@ -2,6 +2,7 @@ services:
   driver-service:
     depends_on:
       - kafka
+      - mongodb
     build:
       context: ../
       dockerfile: build/Dockerfile
@@ -64,5 +65,12 @@ services:
       - KAFKA_INTER_BROKER_LISTENER_NAME=CLIENT
     depends_on:
       - zookeeper
+  mongodb:
+    image: mongo
+    ports:
+      - "27017:27017"
+    networks:
+      - my_network
+
 networks:
   my_network:

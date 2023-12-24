@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"DriverService/internal"
@@ -18,11 +17,6 @@ func main() {
 	if err != nil {
 		log.Fatal("Failed to load config: ", err.Error())
 	}
-
-	fmt.Println(*cfg)
-	fmt.Println(cfg.Debug)
-	fmt.Println(cfg.ServerConfig.Port)
-	fmt.Println(cfg.ServerConfig.Host)
 
 	app, err := createApplication(cfg)
 	if err != nil {

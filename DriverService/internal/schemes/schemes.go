@@ -42,13 +42,8 @@ type JsonData struct {
 type Event struct {
 	TripID  string               `json:"trip_id"`
 	OfferID string               `json:"offer_id"`
-	Price   Price                `json:"price"`
+	Price   models.Money         `json:"price"`
 	From    models.LatLngLiteral `json:"from"`
 	To      models.LatLngLiteral `json:"to"`
 	Status  string               `json:"status"`
-}
-
-type Price struct {
-	Amount   float64 `json:"amount"`
-	Currency string  `json:"currency"`
 }

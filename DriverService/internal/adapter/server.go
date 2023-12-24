@@ -5,6 +5,7 @@ import (
 	"DriverService/internal/config"
 	"github.com/gorilla/mux"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.uber.org/zap"
 	"net/http"
 )
@@ -19,20 +20,23 @@ type Server struct {
 func New(
 	log *zap.Logger,
 	cfg *config.Config,
+	tripsDb *mongo.Collection,
 ) *Server {
+	router := mux.NewRouter()
+	SetUp(router, log, tripsDb)
 	server := &Server{
 		log:    log,
 		config: cfg,
-		router: mux.NewRouter(),
+		router: router,
 	}
 	return server
 }
 
-func (s *Server) SetUp() {
-	controller := handlers.NewController(s.log)
-	s.log.Info("Registered metrics handler")
-	s.router.Handle("/metrics", promhttp.Handler())
-	trips := s.router.PathPrefix("/trips").Subrouter()
+func SetUp(router *mux.Router, log *zap.Logger, tripsDb *mongo.Collection) {
+	controller := handlers.NewController(tripsDb, log)
+	log.Info("Registered metrics handler")
+	router.Handle("/metrics", promhttp.Handler())
+	trips := router.PathPrefix("/trips").Subrouter()
 
 	trips.HandleFunc("", controller.HandlerGetTrips())
 	trips.HandleFunc("/{trip_id}", controller.HandlerGetTripByID())
@@ -41,7 +45,7 @@ func (s *Server) SetUp() {
 	trips.HandleFunc("/{trip_id}/start", controller.HandlerStartTrip())
 	trips.HandleFunc("/{trip_id}/end", controller.HandlerEndTrip())
 
-	s.router.HandleFunc("/add", controller.HandlerAddTrip())
+	router.HandleFunc("/add", controller.HandlerAddTrip())
 }
 
 func (s *Server) Start() error {

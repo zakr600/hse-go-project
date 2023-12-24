@@ -2,26 +2,32 @@ package service
 
 import (
 	"DriverService/internal/models"
-	"DriverService/internal/repository/inmemory"
+	"DriverService/internal/repository"
+	"DriverService/internal/repository/mongo_db"
 	"DriverService/internal/schemes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/segmentio/kafka-go"
+	"go.mongodb.org/mongo-driver/mongo"
 	"os"
 )
 
 type Service struct {
-	repo   *inmemory.Repository
+	repo   repository.Repository
 	writer *kafka.Writer
 	reader *kafka.Reader
 }
 
-func New() *Service {
+func New(tripsDb *mongo.Collection) *Service {
 	kafkaAddress := os.Getenv("KAFKA")
+	repo, err := mongo_db.NewRepository(tripsDb)
 
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 	return &Service{
-		repo: inmemory.NewRepository(),
+		repo: repo,
 		writer: &kafka.Writer{
 			Addr:     kafka.TCP(kafkaAddress),
 			Topic:    "commands",
@@ -38,11 +44,14 @@ func New() *Service {
 }
 
 func (s *Service) GetTrips() ([]models.Trip, error) {
-	trips := s.repo.GetAllTrips()
+	trips, err := s.repo.GetAllTrips() // TODO обработка ошибки
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 	return trips, nil
 }
 
-func (s *Service) GetTrip(tripId string) (models.Trip, error) {
+func (s *Service) GetTrip(tripId string) (*models.Trip, error) {
 	trip, err := s.repo.Get(tripId)
 	return trip, err
 }
@@ -116,12 +125,15 @@ func (s *Service) OnCancelTrip(tripID string) error {
 func (s *Service) OnCreateTrip(event schemes.Event) error {
 	fmt.Println("Trip created")
 	fmt.Println("Event", event)
+
 	return nil
 }
 
-// TODO: удалить
 func (s *Service) AddTrip(trip models.Trip) {
-	s.repo.Add(trip)
+	err := s.repo.Add(trip)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 }
 
 func (s *Service) writeCommand(cmd schemes.Scheme) error {

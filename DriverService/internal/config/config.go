@@ -12,14 +12,17 @@ import (
 var (
 	DriverServerPort        = "DRIVER_SERVER_PORT"
 	DriverServerHost        = "DRIVER_SERVER_HOST"
+	MongoURI                = "MONGO_URI"
 	Debug                   = "DRIVER_SERVICE_DEBUG"
 	DefaultDriverServerPort = "8081"
 	DefaultDriverServerHost = "localhost"
+	DefaultMongoURI         = "mongodb://mongodb:27017"
 )
 
 type Config struct {
 	Debug        bool          `json:"debug"`
 	ServerConfig *ServerConfig `json:"serverConfig"`
+	MongoURI     string        `json:"mongoUri"`
 }
 
 type ServerConfig struct {
@@ -48,6 +51,7 @@ func GetConfig() (*Config, error) {
 	}
 	serverPort := GetEnvString(DriverServerPort, DefaultDriverServerPort)
 	serverHost := GetEnvString(DriverServerHost, DefaultDriverServerHost)
+	MongoURI := GetEnvString(MongoURI, DefaultMongoURI)
 
 	cfg := &ServerConfig{
 		Host: serverHost,
@@ -58,6 +62,7 @@ func GetConfig() (*Config, error) {
 	return &Config{
 		Debug:        debug,
 		ServerConfig: cfg,
+		MongoURI:     MongoURI,
 	}, nil
 }
 

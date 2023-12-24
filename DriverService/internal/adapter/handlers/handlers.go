@@ -8,6 +8,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.uber.org/zap"
 	"io"
 	"math/rand"
@@ -38,8 +39,8 @@ type Controller struct {
 	log *zap.Logger
 }
 
-func NewController(log *zap.Logger) *Controller {
-	svc := service.New()
+func NewController(trips_db *mongo.Collection, log *zap.Logger) *Controller {
+	svc := service.New(trips_db)
 
 	go func() {
 		_ = svc.FetchEvents()
@@ -87,7 +88,7 @@ func (controller *Controller) HandlerGetTripByID() http.HandlerFunc {
 
 		httpRequests2xx.WithLabelValues("HandlerGetTripByID").Inc()
 		w.Header().Set("Content-Type", "application/json")
-		if err := json.NewEncoder(w).Encode(trip); err != nil {
+		if err := json.NewEncoder(w).Encode(*trip); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
