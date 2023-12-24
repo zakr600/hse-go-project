@@ -1,6 +1,7 @@
 package schemes
 
 import (
+	"DriverService/internal/models"
 	"github.com/google/uuid"
 	"time"
 )
@@ -32,4 +33,17 @@ func NewScheme(t string, data map[string]interface{}) Scheme {
 		Time:            time.Now(),
 		Data:            data,
 	}
+}
+
+type JsonData struct {
+	Event Event `json:"data"`
+}
+
+type Event struct {
+	TripID  string               `json:"trip_id"`
+	OfferID string               `json:"offer_id"`
+	Price   models.Money         `json:"price"`
+	From    models.LatLngLiteral `json:"from"`
+	To      models.LatLngLiteral `json:"to"`
+	Status  string               `json:"status"`
 }

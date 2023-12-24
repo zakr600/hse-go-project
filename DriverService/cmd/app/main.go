@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"flag"
 	"log"
 
 	"DriverService/internal"
@@ -13,13 +12,10 @@ import (
 	"time"
 )
 
-var configPathFlag = flag.String("config", "configs/config.json", "path to the configuration file")
-
 func main() {
-	flag.Parse()
-	cfg, err := loadConfig(*configPathFlag)
+	cfg, err := config.GetConfig()
 	if err != nil {
-		log.Fatal("Failed to load the configuration file: ", err)
+		log.Fatal("Failed to load config: ", err.Error())
 	}
 
 	app, err := createApplication(cfg)
@@ -50,7 +46,7 @@ func main() {
 }
 
 func loadConfig(configPath string) (*config.Config, error) {
-	cfg, err := config.GetConfig(configPath)
+	cfg, err := config.GetConfigFromFile(configPath)
 	if err != nil {
 		return nil, err
 	}

@@ -1,6 +1,9 @@
 {
   "debug": true,
   "serverConfig": {
+    "port": "8081"
+  },
+  "locationService": {
     "port": "8080"
   }
 }
